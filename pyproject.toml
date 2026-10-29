@@ -38,9 +38,9 @@ firestore = [
 ]
 
 [project.urls]
-homepage = "https://github.com/googleads/google-ads-mcp"
-repository = "https://github.com/googleads/google-ads-mcp.git"
-issues = "https://github.com/googleads/google-ads-mcp/issues"
+homepage = "https://github.com/nomadicsoft/google-ads-mcp"
+repository = "https://github.com/nomadicsoft/google-ads-mcp.git"
+issues = "https://github.com/nomadicsoft/google-ads-mcp/issues"
 
 [project.scripts]
 google-ads-mcp = "ads_mcp.server:run_server"

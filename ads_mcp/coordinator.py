@@ -20,6 +20,7 @@ of the server.
 """
 
 import os
+from ads_mcp.auth_config import oauth_configured
 from typing import Any
 from fastmcp import FastMCP
 from fastmcp.server.auth.providers.google import GoogleProvider
@@ -32,7 +33,7 @@ _CLIENT_SECRET = os.environ.get("GOOGLE_ADS_MCP_OAUTH_CLIENT_SECRET")
 _BASE_URL = os.environ.get("GOOGLE_ADS_MCP_BASE_URL", "http://localhost:8080")
 _JWT_SIGNING_KEY = os.environ.get("GOOGLE_ADS_MCP_JWT_SIGNING_KEY")
 
-if _CLIENT_ID and _CLIENT_SECRET:
+if oauth_configured():
     client_storage = create_client_storage()
     provider_kwargs: dict[str, Any] = {
         "client_id": _CLIENT_ID,

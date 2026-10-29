@@ -1,5 +1,10 @@
 # Google Ads MCP Server
 
+AtmosCompute/Corcava fork of [Google's server](https://github.com/googleads/google-ads-mcp).
+Adds batch creation, updates and removals through Google's SDK, plus an
+[AtmosCompute hosting guide](deploy/atmoscompute/README.md). The standalone
+OAuth endpoint can be reused by ChatGPT and other MCP clients; PHP is not required.
+
 This repo contains the source code for running an
 [MCP](https://modelcontextprotocol.io) server that interacts with the
 [Google Ads API](https://developers.google.com/google-ads/api).
@@ -17,6 +22,12 @@ to provide several
 - `get_resource_metadata`: Retrieves metadata about a Google Ads API resource type, for example "campaign". This is useful to understand the structure of the data and what fields are available for querying.
 - `list_accessible_customers`: Returns ids of customers directly accessible
   by the user authenticating the call.
+- `mutations_get_mutation_schema`: Inspects the installed SDK's supported mutation
+  operations, nested message fields and enum values.
+- `mutations_mutate`: Creates, updates or removes campaigns, budgets, ad groups,
+  ads, keywords and other supported resources. Defaults to validation only;
+  set `validate_only=false` to apply authorized changes. See
+  [mutation usage](docs/mutations.md) for JSON examples and error handling.
 
 ### Configuring and Namespacing Tools
 

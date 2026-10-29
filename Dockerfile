@@ -22,6 +22,12 @@ RUN python -c "from importlib.metadata import version; from pathlib import Path;
 
 LABEL io.google-mcp.workaround="openai-codex-0146-rfc9207-iss"
 
+RUN useradd --uid 10001 --create-home mcp \
+    && mkdir -p /var/lib/google-ads-mcp/auth \
+    && chown -R mcp:mcp /var/lib/google-ads-mcp
+USER mcp
+ENV PYTHONDONTWRITEBYTECODE=1
+
 # Expose port 8080 (default for Cloud Run)
 EXPOSE 8080
 

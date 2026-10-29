@@ -17,6 +17,7 @@
 import os
 
 from ads_mcp.coordinator import mcp
+from ads_mcp.auth_config import oauth_configured
 
 # The following imports are necessary to register the resources with the `mcp`
 # object, even though they are not directly used in this file.
@@ -32,11 +33,9 @@ from ads_mcp.resources import (
 
 
 def run_server() -> None:
-    _CLIENT_ID = os.environ.get("GOOGLE_ADS_MCP_OAUTH_CLIENT_ID")
-    _CLIENT_SECRET = os.environ.get("GOOGLE_ADS_MCP_OAUTH_CLIENT_SECRET")
     port = int(os.environ.get("PORT", "8080"))
 
-    if _CLIENT_ID and _CLIENT_SECRET:
+    if oauth_configured():
         mcp.run(
             transport="streamable-http",
             port=port,
