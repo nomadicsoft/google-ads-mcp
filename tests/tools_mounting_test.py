@@ -25,6 +25,32 @@ class TestToolsMounting(unittest.IsolatedAsyncioTestCase):
     """Verifies that tools are mounted and namespaced according to ToolsConfig."""
 
     @patch("ads_mcp.config.ToolsConfig.load")
+    async def test_mutations_can_be_disabled_for_read_only_deployments(
+        self, mock_load
+    ):
+        mock_load.return_value = ToolsConfig(
+            {"namespaces": {"search": True, "mutations": False}}
+        )
+        parent = FastMCP("Read only")
+        initialize_and_mount_tools(parent)
+        names = [t.name for t in await parent.list_tools()]
+        self.assertIn("search_search", names)
+        self.assertFalse(any(name.startswith("mutations_") for name in names))
+
+    @patch("ads_mcp.config.ToolsConfig.load")
+    async def test_mutations_are_mounted_with_writable_annotation(
+        self, mock_load
+    ):
+        mock_load.return_value = ToolsConfig(
+            {"namespaces": {"mutations": True}}
+        )
+        parent = FastMCP("Writable")
+        initialize_and_mount_tools(parent)
+        tools = {t.name: t for t in await parent.list_tools()}
+        self.assertIn("mutations_get_mutation_schema", tools)
+        self.assertFalse(tools["mutations_mutate"].annotations.readOnlyHint)
+
+    @patch("ads_mcp.config.ToolsConfig.load")
     async def test_mounting_all_enabled_default_prefixes(self, mock_load):
         """Tests mounting with all categories enabled and default namespace prefixes."""
         # Mock config to enable everything with defaults

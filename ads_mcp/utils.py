@@ -29,6 +29,7 @@ from google.ads.googleads.v25.services.services.google_ads_service import (
 from google.ads.googleads.util import get_nested_attr
 import google.auth
 from ads_mcp.mcp_header_interceptor import MCPHeaderInterceptor
+from ads_mcp.auth_config import oauth_configured
 import os
 import re
 import importlib.resources
@@ -44,8 +45,7 @@ logging.basicConfig(level=logging.INFO)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
 # OAuth scope for the Google Ads API. Google Ads does not publish a separate
-# read-only scope; access is restricted to read methods by the tools this
-# server exposes (see ads_mcp/tools/).
+# read-only scope. Enabled tool namespaces control the exposed operations.
 _ADS_SCOPE = "https://www.googleapis.com/auth/adwords"
 
 
@@ -74,9 +74,13 @@ def _create_credentials() -> google.auth.credentials.Credentials:
     from google.oauth2.credentials import Credentials
 
     token_obj = get_access_token()
+    hosted = oauth_configured()
     if token_obj and token_obj.token:
         # Create credentials using the access token provided by FastMCP
         return Credentials(token=token_obj.token)
+
+    if hosted:
+        raise RuntimeError("An authenticated Google OAuth session is required.")
 
     with prevent_stdio_inheritance():
         credentials, _ = google.auth.default(scopes=[_ADS_SCOPE])

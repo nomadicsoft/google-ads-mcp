@@ -1,0 +1,15 @@
+.git
+.env
+.env.*
+**/.env
+**/.env.*
+.venv
+**/__pycache__
+*.egg-info
+.nox
+.pytest_cache
+build
+dist
+*.pem
+*.key
+application_default_credentials.json

@@ -1,0 +1,38 @@
+services:
+  google-ads-mcp:
+    build:
+      context: ../..
+    restart: unless-stopped
+    init: true
+    ports:
+      - "127.0.0.1:18080:8080"
+    environment:
+      PORT: "8080"
+      FASTMCP_CHECK_FOR_UPDATES: "off"
+      GOOGLE_ADS_MCP_REQUIRE_OAUTH: "true"
+      GOOGLE_ADS_MCP_OAUTH_CLIENT_ID: ${GOOGLE_ADS_MCP_OAUTH_CLIENT_ID:?Set the Google OAuth client ID}
+      GOOGLE_ADS_MCP_OAUTH_CLIENT_SECRET: ${GOOGLE_ADS_MCP_OAUTH_CLIENT_SECRET:?Set the Google OAuth client secret}
+      GOOGLE_ADS_MCP_BASE_URL: ${GOOGLE_ADS_MCP_BASE_URL:?Set the public HTTPS origin}
+      GOOGLE_ADS_MCP_JWT_SIGNING_KEY: ${GOOGLE_ADS_MCP_JWT_SIGNING_KEY:?Set a persistent signing key}
+      GOOGLE_ADS_MCP_STORAGE_TYPE: filetree
+      GOOGLE_ADS_MCP_STORAGE_PATH: /var/lib/google-ads-mcp/auth
+      GOOGLE_ADS_MCP_STORAGE_ENCRYPTION_KEY: ${GOOGLE_ADS_MCP_STORAGE_ENCRYPTION_KEY:?Set a persistent encryption key}
+      GOOGLE_ADS_DEVELOPER_TOKEN: ${GOOGLE_ADS_DEVELOPER_TOKEN:-}
+    volumes:
+      - oauth-data:/var/lib/google-ads-mcp
+    read_only: true
+    tmpfs:
+      - /tmp:mode=1777,size=64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8080), timeout=3).close()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  oauth-data:
