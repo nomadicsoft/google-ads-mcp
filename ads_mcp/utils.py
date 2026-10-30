@@ -30,6 +30,7 @@ from google.ads.googleads.util import get_nested_attr
 import google.auth
 from ads_mcp.mcp_header_interceptor import MCPHeaderInterceptor
 from ads_mcp.auth_config import oauth_configured
+from ads_mcp.execution_context import current_credentials
 import os
 import re
 import importlib.resources
@@ -73,6 +74,10 @@ def _create_credentials() -> google.auth.credentials.Credentials:
     from fastmcp.server.dependencies import get_access_token
     from google.oauth2.credentials import Credentials
 
+    supplied = current_credentials()
+    if supplied is not None:
+        return Credentials(token=supplied.access_token)
+
     token_obj = get_access_token()
     hosted = oauth_configured()
     if token_obj and token_obj.token:
@@ -89,6 +94,9 @@ def _create_credentials() -> google.auth.credentials.Credentials:
 
 def _get_developer_token() -> str | None:
     """Returns the developer token from the environment variable GOOGLE_ADS_DEVELOPER_TOKEN, if set."""
+    supplied = current_credentials()
+    if supplied is not None:
+        return supplied.developer_token
     return os.environ.get("GOOGLE_ADS_DEVELOPER_TOKEN")
 
 
@@ -104,7 +112,11 @@ def _get_login_customer_id(
     resolved_login_customer_id = (
         login_customer_id
         if login_customer_id is not None
-        else os.environ.get("GOOGLE_ADS_LOGIN_CUSTOMER_ID")
+        else (
+            None
+            if current_credentials() is not None
+            else os.environ.get("GOOGLE_ADS_LOGIN_CUSTOMER_ID")
+        )
     )
     if resolved_login_customer_id:
         return clean_customer_id(resolved_login_customer_id)

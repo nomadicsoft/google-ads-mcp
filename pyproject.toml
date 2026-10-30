@@ -2,9 +2,12 @@
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages.find]
+include = ["ads_mcp*"]
+
 [project]
-name = "google-ads-mcp"
-version = "0.0.5"
+name = "nomadicsoft-google-ads-mcp"
+version = "0.1.0"
 requires-python = ">=3.10"
 license = "Apache-2.0"
 dependencies = [
@@ -43,5 +46,7 @@ repository = "https://github.com/nomadicsoft/google-ads-mcp.git"
 issues = "https://github.com/nomadicsoft/google-ads-mcp/issues"
 
 [project.scripts]
+nomadicsoft-google-ads-mcp = "ads_mcp.server:run_server"
+nomadicsoft-google-ads-bridge = "ads_mcp.bridge:main"
 google-ads-mcp = "ads_mcp.server:run_server"
 google-ads-mcp-update-gaql = "ads_mcp.update_references:update_gaql_resource_file"
