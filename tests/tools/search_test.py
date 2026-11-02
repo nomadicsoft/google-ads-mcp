@@ -15,6 +15,7 @@
 """Test cases for the search tool."""
 
 import unittest
+import asyncio
 from unittest.mock import MagicMock, patch, mock_open
 
 from ads_mcp.tools import search
@@ -22,6 +23,17 @@ from ads_mcp.tools import search
 
 class TestSearch(unittest.TestCase):
     """Test cases for the search tool."""
+
+    def test_registered_description_keeps_query_guidance(self):
+        tools = asyncio.run(search.search_mcp.list_tools())
+        tool = next(tool for tool in tools if tool.name == "search")
+        self.assertIn("Language Grammar", tool.description)
+        self.assertIn("### Valid resources", tool.description)
+        self.assertIn("Date ranges must be finite", tool.description)
+        self.assertEqual(
+            "The id of the customer",
+            tool.parameters["properties"]["customer_id"]["description"],
+        )
 
     @patch("ads_mcp.utils.get_googleads_service")
     @patch("ads_mcp.utils.format_output_row")

@@ -1,165 +1,59 @@
-# Publishing releases
+# Releasing the NomadicSoft fork
 
-This guide is for maintainers publishing `google-ads-mcp` to TestPyPI, PyPI,
-and GitHub Releases. The release workflow uses PyPI Trusted Publishing and
-short-lived OpenID Connect (OIDC) credentials. Do not create a `PYPI_TOKEN` or
-store a PyPI password in GitHub.
+The distribution is `nomadicsoft-google-ads-mcp`; the import namespace stays
+`ads_mcp`. The first fork release is `0.1.0`. This package is independent of
+Google's `google-ads-mcp` PyPI project. Keep the upstream Apache-2.0 license and
+attribution when merging upstream changes.
 
-The workflow file name and GitHub environment names are part of the trusted
-identity. If any of them changes, update the publisher configuration on the
-corresponding package index before attempting another publication.
+## One-time setup
 
-## Required access
+Before tagging a release, an owner must configure a [pending Trusted Publisher](https://docs.pypi.org/trusted-publishers/creating-a-project-through-oidc/)
+on PyPI. The intended project name must be available; this repository does not
+reserve it or claim that a release has already been published.
 
-The maintainer performing the one-time setup needs:
-
-- repository administration access for `googleads/google-ads-mcp`;
-- Owner or Maintainer access to `google-ads-mcp` on PyPI; and
-- access to the corresponding project on TestPyPI, or permission to create a
-  pending publisher there.
-
-## Configure GitHub environments
-
-In the repository, open **Settings > Environments** and create these two
-environments:
-
-- `pypi` for production releases; and
-- `testpypi` for manual rehearsals.
-
-For `pypi`, configure at least one required reviewer and restrict deployments
-to tags matching `v*`. Do not allow administrators to bypass the production
-approval unless the repository's incident procedure explicitly requires it.
-Required reviewers are optional for `testpypi`, but the environment must still
-exist because its name is included in the OIDC identity.
-
-## Register the PyPI Trusted Publisher
-
-Follow PyPI's guide for [adding a publisher to an existing
-project](https://docs.pypi.org/trusted-publishers/adding-a-publisher/):
-
-1. Sign in to PyPI and open **Your projects**.
-2. Select **Manage** for `google-ads-mcp`.
-3. Open **Publishing**.
-4. Add a GitHub Actions publisher with these exact values:
-
-   | Field | Value |
-   | --- | --- |
-   | Owner | `googleads` |
-   | Repository name | `google-ads-mcp` |
-   | Workflow name | `release.yml` |
-   | Environment name | `pypi` |
-
-After registration, the `publish-pypi` job can request a short-lived token.
-The job grants `id-token: write` only for that publication and uses PyPA's
-official [Trusted Publishing
-action](https://docs.pypi.org/trusted-publishers/using-a-publisher/).
-
-## Register the TestPyPI Trusted Publisher
-
-Sign in to [TestPyPI](https://test.pypi.org/) and register a separate GitHub
-Actions publisher. Use the same values as production except for the environment:
-
-| Field | Value |
+| Publisher field | Value |
 | --- | --- |
-| Owner | `googleads` |
-| Repository name | `google-ads-mcp` |
-| Workflow name | `release.yml` |
-| Environment name | `testpypi` |
+| PyPI project | `nomadicsoft-google-ads-mcp` |
+| GitHub owner | `nomadicsoft` |
+| Repository | `google-ads-mcp` |
+| Workflow filename | `release.yml` |
+| Environment | `pypi` |
 
-PyPI and TestPyPI are separate services. Registering the production publisher
-does not configure TestPyPI.
+Create the `pypi` GitHub environment with those exact values. A reviewer and a
+`v*` tag restriction are recommended. No long-lived PyPI token is required.
+For rehearsals, register a separate pending publisher on TestPyPI and create a
+`testpypi` GitHub environment; use the same fields except environment `testpypi`.
+PyPI and TestPyPI do not share accounts or publisher settings.
 
-## Rehearse a release on TestPyPI
+## First release and later updates
 
-The manual workflow is available after `release.yml` has been merged into the
-repository's default branch.
+1. Merge the packaging/bridge PR and verify CI.
+2. Optionally run **Release** manually on the default branch. This publishes
+   `0.1.0.dev<run-id>` to TestPyPI and never to production PyPI.
+3. For production, ensure `project.version` is the intended unused version, then
+   create and push an **annotated** tag matching it, initially `v0.1.0`:
 
-1. Open **Actions > Release > Run workflow**.
-2. Select the revision to test and start the workflow.
-3. Approve the `testpypi` environment if reviewers are configured.
-4. Wait for both **Build and validate distributions** and **Publish to
-   TestPyPI** to finish.
-5. Verify the new release on TestPyPI. Its version is derived from the declared
-   version and the unique workflow run ID, for example
-   `0.0.1.dev123456789`.
-6. Download the Actions artifact and verify that it contains one wheel, one
-   source distribution, and `SHA256SUMS`.
-
-The version change exists only in the runner workspace. It is never committed
-and the TestPyPI distributions are never reused for production. If a rehearsal
-must be repeated after it has published, start a new workflow run instead of
-rerunning the completed publication job; the new run receives a new version.
-
-## Publish a production release
-
-### Prepare the version
-
-1. Choose a new, unused `X.Y.Z` version that follows PEP 440.
-2. Create a pull request that changes only `project.version` in
-   `pyproject.toml`.
-3. Run and approve all required CI checks.
-4. Merge the version pull request into `main`.
-5. Confirm that the version does not already exist on PyPI.
-
-### Create the release tag
-
-From an up-to-date `main`, create and push an annotated tag:
-
-```shell
-git switch main
-git pull --ff-only
-git tag -a vX.Y.Z -m "Release vX.Y.Z"
-git push origin vX.Y.Z
-```
-
-Do not create the tag on an unmerged commit. Do not move or reuse it after it
-has been pushed.
-
-The workflow rejects a production tag unless all of these conditions hold:
-
-- the tag uses the exact `vX.Y.Z` format;
-- it is annotated;
-- `X.Y.Z` matches `project.version`;
-- the tagged commit belongs to `origin/main`; and
-- the version does not already exist on PyPI.
-
-### Approve and verify publication
-
-1. Approve the `pypi` environment deployment.
-2. Confirm that **Publish to PyPI** succeeds.
-3. Confirm that **Create GitHub Release** succeeds afterward.
-4. Verify the wheel and source distribution on PyPI.
-5. Verify that the GitHub Release contains those same files and
-   `SHA256SUMS`.
-6. Install the exact published version:
-
-   ```shell
-   pipx run --spec "google-ads-mcp==X.Y.Z" google-ads-mcp
+   ```sh
+   git tag -a v0.1.0 -m 'NomadicSoft Google Ads MCP 0.1.0'
+   git push origin v0.1.0
    ```
 
-7. Close the release issue only after at least one new production version is
-   available and installable.
+4. The release workflow verifies the tag belongs to main, builds and checks the
+   wheel/sdist, inspects an installed wheel and its bridge entry point, then
+   publishes through OIDC. Approve the environment if protection requires it.
+5. Install the published version in a clean environment and verify:
 
-## Failure recovery
+   ```sh
+   python -m pip install 'nomadicsoft-google-ads-mcp==0.1.0'
+   nomadicsoft-google-ads-bridge --version
+   ```
 
-- **Failure before PyPI publication:** correct the source through a pull
-  request, choose a new version, and create a new tag. Do not move a pushed
-  release tag.
-- **PyPI succeeded but GitHub Release failed:** use **Re-run failed jobs** so
-  the release job resumes its draft or verifies the already published assets.
-  Do not rerun the successful PyPI job.
-- **Defective published version:** yank it on PyPI when appropriate and publish
-  a corrected version. PyPI distributions cannot be overwritten.
-- **Interrupted TestPyPI rehearsal:** start a new manual run if the package was
-  already uploaded, because every uploaded version is immutable.
+6. Deploy AtmosCompute with its matching `requirements/google-ads-mcp.txt` pin.
+   Future upstream merges get a new fork version and a separate AtmosCompute PR
+   updating that pin. Do not make production follow a Git branch or `latest`.
 
-## Troubleshooting
-
-| Symptom | Likely cause | Resolution |
-| --- | --- | --- |
-| Trusted Publisher reports an invalid publisher | Owner, repository, workflow, or environment differs from the registered identity | Compare all four values character for character and update the index configuration if the workflow was renamed. |
-| The workflow cannot request an OIDC token | The publication job lacks `id-token: write` or is not using the registered environment | Keep `id-token: write` on the publication job and select the exact `pypi` or `testpypi` environment. |
-| Publication waits indefinitely | A protected environment is awaiting review | Ask an allowed reviewer to approve or reject the deployment in GitHub Actions. |
-| PyPI says a file or version already exists | The version was already uploaded | Never enable `skip-existing` for production. Choose a new version and tag. |
-| Production validation rejects the tag | The tag is lightweight, mismatches `project.version`, or is not on `main` | Merge the version change first, then create a new annotated tag from the merged commit. |
-| A TestPyPI rerun reports a duplicate version | The successful dispatch was rerun with the same run ID | Start a new manual workflow run to generate a new `.dev` version. |
+The old `google-ads-mcp` command remains as a compatibility alias. The fork's
+explicit commands are `nomadicsoft-google-ads-mcp` (standalone MCP server) and
+`nomadicsoft-google-ads-bridge` (private one-shot host integration). Avoid
+installing both distributions into the same Python environment because both
+provide the `ads_mcp` namespace.

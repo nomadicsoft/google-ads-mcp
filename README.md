@@ -1,9 +1,13 @@
 # Google Ads MCP Server
 
 AtmosCompute/Corcava fork of [Google's server](https://github.com/googleads/google-ads-mcp).
-Adds batch creation, updates and removals through Google's SDK, plus an
-[AtmosCompute hosting guide](deploy/atmoscompute/README.md). The standalone
-OAuth endpoint can be reused by ChatGPT and other MCP clients; PHP is not required.
+Distribution name: `nomadicsoft-google-ads-mcp` (first release: `0.1.0`).
+Adds batch creation, updates and removals through Google's SDK and a
+[private subprocess bridge](docs/bridge.md) for applications that already own
+OAuth. AtmosCompute installs this package inside its main deployment; Laravel
+owns the public MCP endpoint and per-team Google connection. No separate public
+Python service is needed. Standalone MCP/OAuth operation is also supported.
+See [release setup](docs/releasing.md) before the first PyPI publication.
 
 This repo contains the source code for running an
 [MCP](https://modelcontextprotocol.io) server that interacts with the
@@ -69,7 +73,7 @@ namespaces:
 ## Notes
 
 1.  The MCP Server will expose your data to the Agent or LLM that you connect to it.
-1.  If you have technical issues, please use the [GitHub issue tracker](https://github.com/googleads/google-ads-mcp/issues).
+1.  If you have technical issues, please use the [GitHub issue tracker](https://github.com/nomadicsoft/google-ads-mcp/issues).
 1.  To help us collect usage data, you will notice an extra header has been added to your API calls: this data is used to improve the product.
 
 ## Setup instructions
@@ -90,7 +94,7 @@ After a version has been published to PyPI, you can run that exact version
 instead of following the latest repository state:
 
 ```shell
-pipx run --spec "google-ads-mcp==X.Y.Z" google-ads-mcp
+pipx run --spec "nomadicsoft-google-ads-mcp==X.Y.Z" google-ads-mcp
 ```
 
 ### Configure Developer Token (Optional)
@@ -132,7 +136,7 @@ To enable it, set the following environment variables:
 
 The `redis` and `firestore` backends need their storage library installed
 alongside the server: `pip install py-key-value-aio[redis]` and
-`pip install google-ads-mcp[firestore]` respectively.
+`pip install nomadicsoft-google-ads-mcp[firestore]` respectively.
 
 Once this is enabled, you can authenticate to the API through your MCP client.
 
@@ -318,7 +322,7 @@ popular clients.
           "args": [
             "run",
             "--spec",
-            "git+https://github.com/googleads/google-ads-mcp.git",
+            "git+https://github.com/nomadicsoft/google-ads-mcp.git",
             "google-ads-mcp"
           ],
           "env": {
@@ -341,7 +345,7 @@ popular clients.
           "args": [
             "run",
             "--spec",
-            "git+https://github.com/googleads/google-ads-mcp.git",
+            "git+https://github.com/nomadicsoft/google-ads-mcp.git",
             "google-ads-mcp"
           ],
           "env": {
@@ -373,7 +377,7 @@ The final file will look like this:
         "args": [
           "run",
           "--spec",
-          "git+https://github.com/googleads/google-ads-mcp.git",
+          "git+https://github.com/nomadicsoft/google-ads-mcp.git",
           "google-ads-mcp"
         ],
         "env": {

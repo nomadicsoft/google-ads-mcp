@@ -1,3 +1,8 @@
+> **Legacy standalone example.** AtmosCompute now uses the private package bridge
+> inside its main Laravel deployment. Follow [the bridge guide](../../docs/bridge.md)
+> for that integration. This Compose setup is optional for independent standalone
+> hosting and is not required by AtmosCompute.
+
 # Host Google Ads MCP alongside AtmosCompute
 
 This is a standalone Python service, using Google's SDK and upstream Google
